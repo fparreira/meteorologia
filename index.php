@@ -110,7 +110,7 @@
                     <?php
                     include_once ('conexao.php');
 
-                    $sql = "SELECT max(maxima_t) t FROM maxima_minima ";
+                    $sql = "SELECT maxima_t FROM where idm = (SELECT MAX(idm)) maxima_minima ";
                     $result = pg_query($sql); //Executar a SQL
                     $dado = pg_fetch_assoc($result);
                     $t = $dado['t'];
@@ -125,7 +125,7 @@
                 <h3 style="margin-left:25%;margin-right: 50%;text-align: center;float:left;color: black;font-size: 22px; ">Chuva</h3>
                 <h3 style="text-align: center;">
                     <?php
-                    $sql = "SELECT max(maxima_p) p FROM maxima_minima ";
+                    $sql = "SELECT maxima_p FROM where idm = (SELECT MAX(idm)) maxima_minima ";
                     $result = pg_query($sql); //Executar a SQL
                     $dado = pg_fetch_assoc($result);
                     $p = $dado['p'];
@@ -139,7 +139,7 @@
                 <h3 style="margin-left:19%;margin-right: 50%;text-align: center;float:left;color: black;font-size: 20px; ">Umidade</h3>
                 <h3 style="text-align: center;">
                     <?php
-                    $sql = "SELECT max(max_u) u FROM maxima_minima ";
+                    $sql = "SELECT max_u FROM where idm = (SELECT MAX(idm)) maxima_minima ";
                    
                     $result = pg_query($sql); //Executar a SQL
                     $dado = pg_fetch_assoc($result);
@@ -170,7 +170,7 @@
 
             <div style="width:40%; float:right;margin-right: 5%; " >
                 <strong><label style="margin-left: 15%;font-size: 20px;">  Chuva em milímitros durante o período de 24 horas</label></strong>
-                <canvas id="canvas"> </canvas>  
+                <canvas id="canvas1"> </canvas>  
             </div>
             <br><br>
         </div>
@@ -179,37 +179,7 @@
             <a href="index.php"><button>Atualizar</button></a>
         </div>--> 
 
-
-
         <script src="jquery-1.12.4.min.js" type="text/javascript"></script>
-
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-      google.charts.load('current', {'packages':['corechart']});
-      google.charts.setOnLoadCallback(drawChart);
-
-      function drawChart() {
-        var data = google.visualization.arrayToDataTable([
-          ['Year', 'Sales', 'Expenses'],
-          ['2004',  1000,      400],
-          ['2005',  1170,      460],
-          ['2006',  660,       1120],
-          ['2007',  1030,      540]
-        ]);
-
-        var options = {
-          title: 'Company Performance',
-          curveType: 'function',
-          legend: { position: 'bottom' }
-        };
-
-        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-
-        chart.draw(data, options);
-      }
-    </script>
-
-
 
         <script>
             //var dataset = new Array();
@@ -233,9 +203,10 @@
                     //Laço para adicinar os dados no grafico
                     for (var i = 0; i < retorno.length; i++) {
 
-                        console.log('erro=>');                        
+                        // console.log('erro=>');                        
                         // console.log({x: retorno[i].x, y: retorno[i].y});
-                        console.log({x: retorno[i].x, y: parseInt(retorno[i].y)});
+                        // console.log({x: retorno[i].x, y: parseInt(retorno[i].y)});
+                        // console.log({x: retorno[i].x, z: parseInt(retorno[i].z)});
                         // // console.log({x: retorno[i].x, y: retorno[i].y});
                         // console.log('ok=>');                        
                         // console.log({x: "2019-11-07 "+i+":00:22.911535", y: retorno[i].y});
@@ -243,9 +214,9 @@
                         // console.log(myLinee.data.datasets[0]);
 
                         //x é o tempo e y o valor da temperatura
-                        // myLinee.data.datasets[0].data.push({x: retorno[i].x, y: retorno[i].y});
                         myLinee.data.datasets[0].data.push({x: retorno[i].x, y: parseInt(retorno[i].y)});
-                        // myLinee.data.datasets[0].data.push({x: "2019-11-07 "+i+":00:22.911535", y: retorno[i].y});
+                        // myLinee.data.datasets[0].data.push({x: retorno[i].x, z: parseInt(retorno[i].z)});
+                        myLinee.data.datasets[1].data.push({x: retorno[i].x, y: parseInt(retorno[i].z)});
 
                         //linha ok funcionando
                         // myLinee.data.datasets[0].data.push({ x: i, y: Math.floor(Math.random()*10) });
@@ -253,6 +224,36 @@
 
                         //atualiza o grafico para mostrar os novos dados
                         myLinee.update();
+                    }
+
+                }).fail(function (textStatus) {
+                    console.log("Request failed: " + textStatus);
+                });
+                
+                var ctx2 = document.getElementById("canvas1").getContext("2d");
+                window.myLinee2 = new Chart(ctx2, config2);
+                //Capturar Dados Usando AJAX
+                $.ajax({
+                    async: true,
+                    crossDomain: true,
+                    url: "dadosPluvi.php",
+                    type: "post",
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "json"
+                }).success(function (retorno) {
+                    //imprimi os dados que veio do ajax
+                    //console.log(retorno);
+                    //Laço para adicinar os dados no grafico
+                    for (var i = 0; i < retorno.length; i++) {
+
+                        console.log({x: retorno[i].x, y: parseInt(retorno[i].w)});
+                        
+
+                        //x é o tempo e y o valor da temperatura
+                        // myLinee2.data.datasets[0].data.push({x: retorno[i].x, y: parseInt(retorno[i].w)});
+                        myLinee2.data.datasets[0].data.push({x: retorno[i].x, y: parseInt(retorno[i].w)});
+                        //atualiza o grafico para mostrar os novos dados
+                        myLinee2.update();
                     }
 
                 }).fail(function (textStatus) {
@@ -313,21 +314,16 @@
                         yAxes: [{
                                 scaleLabel: {
                                     display: true,
-                                    labelString: 'Temperatura (ºC)'
+                                    labelString: 'Temperatura (ºC) Umidade (%)',
+                                
                                 }
+                                
                             }]
                     }
                 }
             };
 
-
-
-
-
-
-
-
-            
+     
             var config2 = {
                 type: 'line',
                 data: {
@@ -362,7 +358,7 @@
                         yAxes: [{
                                 scaleLabel: {
                                     display: true,
-                                    labelString: 'Umidade (%)'
+                                    labelString: 'Precipitação (mm)'
                                 }
                             }]
                     }
@@ -434,14 +430,14 @@
       //  $sql = "select * from media";
 
         $sql = "SELECT * as  data_hora from maxima_minima 
-        WHERE data_hora > current_timestamp - interval '12 hours'";
+        WHERE tempo > current_timestamp - interval '12 hours'";
         $result = pg_query($sql); //Executsar a SQL
         while ($row = pg_fetch_assoc($result)) {
             echo "<tr>
                             <td></td>
-                    <td style='text-align: center'>" . $row['media_t'] . "</td>
-                    <td style='text-align: center'>" . $row['media_u'] . "</td>
-                    <td style='text-align: center'>" . $row['media_p'] . "</td>
+                    <td style='text-align: center'>" . $row['maxima_t'] . "</td>
+                    <td style='text-align: center'>" . $row['max_u'] . "</td>
+                    <td style='text-align: center'>" . $row['maxima_p'] . "</td>
                         <td></td>
                     </tr>";
         }
